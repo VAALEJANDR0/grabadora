@@ -1,74 +1,100 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:background="@color/background"
     tools:context=".MainActivity">
 
-    <!-- Título y estado -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grabadora de Sonido"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"/>
-
-    <!-- Indicador de grabación -->
-    <LinearLayout
-        android:id="@+id/recordingIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="8dp"
-        android:visibility="gone">
-
-        <View
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:background="@drawable/recording_indicator"
-        android:layout_marginEnd="8dp"/>
-
-        <TextView
-            android:id="@+id/statusTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Grabando..."
-            android:textSize="18sp"/>
-    </LinearLayout>
-
-    <!-- Botones de grabación -->
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="16dp">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <Button
-            android:id="@+id/recordButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Grabar"
-            android:layout_marginEnd="16dp"/>
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Grabadora de Sonido"
+            app:titleTextColor="@color/secondary_text"
+            app:backgroundTint="@color/primary_color"/>
 
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="wrap_content"
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="16dp">
+
+        <!-- Estado grabación -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/recordingCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Detener"
-            android:visibility="gone"/>
+            app:cardBackgroundColor="@color/secondary_color"
+            android:visibility="gone"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/recordingProgress"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminate="true"
+                    app:indicatorColor="@color/red_500"
+                    app:trackColor="@color/red_200"
+                    android:layout_marginEnd="16dp"/>
+
+                <TextView
+                    android:id="@+id/statusTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Grabando..."
+                    android:textColor="@color/white"
+                    android:textSize="16sp"/>
+
+                <!-- Botón para detener la grabación -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStopRecording"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Detener"
+                    app:icon="@drawable/ic_stop"
+                    app:iconTint="@color/white"
+                    app:backgroundTint="@color/error_color"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Lista de grabaciones -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recordingsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="88dp"/>
+
     </LinearLayout>
 
-    <!-- Lista de grabaciones -->
-    <ListView
-        android:id="@+id/recordingsListView"
-        android:layout_width="match_parent"
+    <!-- Botón Grabar Flotante -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabRecord"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
-</LinearLayout>
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        app:backgroundTint="@color/primary_color"
+        app:srcCompat="@drawable/ic_mic"
+        app:tint="@color/white"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

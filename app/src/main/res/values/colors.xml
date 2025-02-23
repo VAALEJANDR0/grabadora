@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Colores principales -->
+    <color name="primary_color">#6750A4</color>
+    <color name="primary_dark">#463770</color>
+    <color name="secondary_color">#FFB900</color>
+    <color name="secondary_dark">#CC9400</color>
+
+    <!-- Colores de texto -->
+    <color name="primary_text">#1C1B1F</color>
+    <color name="secondary_text">#757575</color> <!-- Añade esta línea -->
+
+    <!-- Colores base -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="background">#FEF7FF</color>
+
+    <!-- Colores de estado -->
+    <color name="error_color">#B00020</color>
+    <color name="red_500">#F44336</color>
+    <color name="red_200">#EF9A9A</color>
+
 </resources>

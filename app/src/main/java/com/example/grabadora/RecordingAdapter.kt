@@ -2,192 +2,145 @@ package com.example.grabadora
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.media.MediaPlayer
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textview.MaterialTextView
 import java.io.File
 
-class RecordingAdapter(private val context: Context, private val recordings: MutableList<String>) : BaseAdapter() {
+class RecordingAdapter(
+    private val context: Context,
+    private val recordings: MutableList<String>
+) : RecyclerView.Adapter<RecordingAdapter.RecordingViewHolder>() {
 
     private var mediaPlayer: MediaPlayer? = null
-    private var currentlyPlayingPosition: Int = -1 // Para rastrear el audio que se está reproduciendo
+    private var currentlyPlayingPosition = -1
 
-    override fun getCount(): Int = recordings.size
-
-    override fun getItem(position: Int): Any = recordings[position]
-
-    override fun getItemId(position: Int): Long = position.toLong()
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_recording, parent, false)
-
-        val recordingName: TextView = view.findViewById(R.id.recordingName)
-        val playButton: Button = view.findViewById(R.id.playButton)
-        val stopButton: Button = view.findViewById(R.id.stopButton)
-        val editButton: Button = view.findViewById(R.id.editButton)
-        val shareButton: Button = view.findViewById(R.id.shareButton) // Botón de compartir
-        val deleteButton: Button = view.findViewById(R.id.deleteButton) // Botón de eliminar
-
-        val filePath = recordings[position]
-        val file = File(filePath)
-        recordingName.text = file.name // Mostrar solo el nombre del archivo
-
-        // Si este es el audio que se está reproduciendo, mostrar el botón de "stop"
-        if (position == currentlyPlayingPosition) {
-            playButton.visibility = Button.GONE
-            stopButton.visibility = Button.VISIBLE
-        } else {
-            playButton.visibility = Button.VISIBLE
-            stopButton.visibility = Button.GONE
-        }
-
-        // Reproducir audio cuando el botón de "play" sea presionado
-        playButton.setOnClickListener {
-            playRecording(filePath, position, playButton, stopButton)
-        }
-
-        // Detener reproducción cuando el botón de "stop" sea presionado
-        stopButton.setOnClickListener {
-            stopRecording(playButton, stopButton)
-        }
-
-        // Editar nombre cuando se presione el botón de editar
-        editButton.setOnClickListener {
-            showEditDialog(position, filePath)
-        }
-
-        // Compartir el audio cuando se presione el botón de compartir
-        shareButton.setOnClickListener {
-            shareRecording(filePath)
-        }
-
-        // Eliminar el audio cuando se presione el botón de eliminar
-        deleteButton.setOnClickListener {
-            deleteRecording(position, filePath)
-        }
-
-        return view
+    inner class RecordingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val recordingName: MaterialTextView = itemView.findViewById(R.id.recordingName)
+        val playButton: MaterialButton = itemView.findViewById(R.id.playButton)
+        val stopButton: MaterialButton = itemView.findViewById(R.id.stopButton)
+        val editButton: MaterialButton = itemView.findViewById(R.id.editButton)
+        val shareButton: MaterialButton = itemView.findViewById(R.id.shareButton)
+        val deleteButton: MaterialButton = itemView.findViewById(R.id.deleteButton)
     }
 
-    private fun playRecording(filePath: String, position: Int, playButton: Button, stopButton: Button) {
-        mediaPlayer?.apply {
-            if (isPlaying) {
-                stop()
-                release()
-            }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordingViewHolder {
+        return RecordingViewHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_recording, parent, false)
+        )
+    }
+
+    override fun onBindViewHolder(holder: RecordingViewHolder, position: Int) {
+        val file = File(recordings[position])
+        holder.recordingName.text = file.name
+        updateButtonVisibility(holder, position)
+
+        holder.playButton.setOnClickListener { playAudio(file.absolutePath, position, holder) }
+        holder.stopButton.setOnClickListener { stopAudio(holder) }
+        holder.editButton.setOnClickListener { showRenameDialog(file, position) }
+        holder.shareButton.setOnClickListener { shareAudio(file) }
+        holder.deleteButton.setOnClickListener { deleteAudio(file, position) }
+    }
+
+    // --- Funciones modificadas ---
+    private fun playAudio(path: String, position: Int, holder: RecordingViewHolder) {
+        if (currentlyPlayingPosition != -1) {
+            notifyItemChanged(currentlyPlayingPosition)
         }
 
-        notifyDataSetChanged()
+        mediaPlayer?.release()
 
         mediaPlayer = MediaPlayer().apply {
-            try {
-                setDataSource(filePath)
-                prepare()
-                start()
+            setDataSource(path)
+            prepare()
+            start()
+            currentlyPlayingPosition = position
+            updateButtonVisibility(holder, position)
 
-                playButton.visibility = Button.GONE
-                stopButton.visibility = Button.VISIBLE
-                currentlyPlayingPosition = position
-
-                setOnCompletionListener {
-                    playButton.visibility = Button.VISIBLE
-                    stopButton.visibility = Button.GONE
-                    currentlyPlayingPosition = -1
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            setOnCompletionListener {
+                currentlyPlayingPosition = -1
+                notifyItemChanged(position)
             }
         }
     }
 
-    private fun stopRecording(playButton: Button, stopButton: Button) {
+    private fun stopAudio(holder: RecordingViewHolder) {
         mediaPlayer?.apply {
-            if (isPlaying) {
-                stop()
-                release()
-            }
-            playButton.visibility = Button.VISIBLE
-            stopButton.visibility = Button.GONE
+            stop()
+            release()
         }
         mediaPlayer = null
+        val previousPosition = currentlyPlayingPosition
         currentlyPlayingPosition = -1
+        notifyItemChanged(previousPosition)
     }
 
-    private fun showEditDialog(position: Int, filePath: String) {
-        val file = File(filePath)
-        val currentName = file.nameWithoutExtension
-
-        val builder = AlertDialog.Builder(context)
-        val input = EditText(context).apply {
-            setText(currentName)
+    private fun updateButtonVisibility(holder: RecordingViewHolder, position: Int) {
+        if (position == currentlyPlayingPosition) {
+            holder.playButton.visibility = View.GONE
+            holder.stopButton.visibility = View.VISIBLE
+        } else {
+            holder.playButton.visibility = View.VISIBLE
+            holder.stopButton.visibility = View.GONE
         }
+    }
+    // ----------------------------
 
-        builder.setTitle("Editar nombre")
+    // --- Funciones sin cambios ---
+    private fun showRenameDialog(file: File, position: Int) {
+        val input = EditText(context).apply { setText(file.nameWithoutExtension) }
+        AlertDialog.Builder(context)
+            .setTitle("Renombrar")
             .setView(input)
-            .setPositiveButton("Aceptar") { _, _ ->
-                val newName = input.text.toString().trim()
+            .setPositiveButton("Guardar") { _, _ ->
+                val newName = input.text.toString()
                 if (newName.isNotEmpty()) {
-                    renameFile(file, newName)
-                    recordings[position] = "${file.parent}/$newName.3gp"
-                    notifyDataSetChanged()
-                    Toast.makeText(context, "Nombre actualizado a $newName", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                    val newFile = File(file.parent, "$newName.3gp")
+                    if (file.renameTo(newFile)) {
+                        recordings[position] = newFile.absolutePath
+                        notifyItemChanged(position)
+                    } else {
+                        Toast.makeText(context, "Error al renombrar", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun renameFile(file: File, newName: String) {
-        val newFile = File(file.parent, "$newName.3gp")
-        if (!file.renameTo(newFile)) {
-            Toast.makeText(context, "Error al renombrar el archivo", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun deleteRecording(position: Int, filePath: String) {
-        val file = File(filePath)
-        if (file.exists()) {
-            if (file.delete()) {
-                recordings.removeAt(position)
-                notifyDataSetChanged()
-                Toast.makeText(context, "Audio eliminado", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "No se pudo eliminar el archivo", Toast.LENGTH_SHORT).show()
-            }
+    private fun deleteAudio(file: File, position: Int) {
+        if (file.delete()) {
+            recordings.removeAt(position)
+            notifyItemRemoved(position)
+            Toast.makeText(context, "Archivo eliminado", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(context, "El archivo no existe", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Error al eliminar", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun shareRecording(filePath: String) {
-        val file = File(filePath)
-        if (!file.exists()) {
-            Toast.makeText(context, "El archivo no existe", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    private fun shareAudio(file: File) {
+        val uri: Uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            file
+        )
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "audio/*"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, "Escucha este audio grabado en mi app!")
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         }
-
-        if (shareIntent.resolveActivity(context.packageManager) != null) {
-            context.startActivity(Intent.createChooser(shareIntent, "Compartir audio"))
-        } else {
-            Toast.makeText(context, "No hay aplicaciones disponibles para compartir el audio", Toast.LENGTH_SHORT).show()
-        }
+        context.startActivity(Intent.createChooser(shareIntent, "Compartir audio"))
     }
+
+    override fun getItemCount(): Int = recordings.size
 }

@@ -4,67 +4,88 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textview.MaterialTextView
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+
     private var mediaRecorder: MediaRecorder? = null
     private lateinit var fileName: String
-    private lateinit var recordingsListView: ListView
-    private lateinit var statusTextView: TextView
+    private lateinit var recordingsRecyclerView: RecyclerView
+    private lateinit var statusTextView: MaterialTextView
+    private lateinit var recordingCard: MaterialCardView
+    private lateinit var btnStopRecording: MaterialButton
+    private lateinit var fabRecord: FloatingActionButton
     private val recordings = mutableListOf<String>()
     private lateinit var recordingAdapter: RecordingAdapter
+
+    // Directorio de almacenamiento
     private val storageDir: File by lazy {
         File(getExternalFilesDir(null), "recordings").apply { mkdirs() }
+    }
+
+    // Registro para permisos
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            startRecording()
+        } else {
+            Toast.makeText(this, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val recordButton: Button = findViewById(R.id.recordButton)
-        val stopButton: Button = findViewById(R.id.stopButton)
+        // Inicializar vistas
+        fabRecord = findViewById(R.id.fabRecord)
+        recordingCard = findViewById(R.id.recordingCard)
         statusTextView = findViewById(R.id.statusTextView)
-        recordingsListView = findViewById(R.id.recordingsListView)
+        btnStopRecording = findViewById(R.id.btnStopRecording)
+        recordingsRecyclerView = findViewById(R.id.recordingsRecyclerView)
 
-        loadRecordings()  // Cargar grabaciones almacenadas
-
+        // Configurar RecyclerView
+        recordingsRecyclerView.layoutManager = LinearLayoutManager(this)
         recordingAdapter = RecordingAdapter(this, recordings)
-        recordingsListView.adapter = recordingAdapter
+        recordingsRecyclerView.adapter = recordingAdapter
 
-        if (!checkPermissions()) requestPermissions()
+        loadRecordings()
 
-        recordButton.setOnClickListener {
+        // Listeners
+        fabRecord.setOnClickListener {
             if (checkPermissions()) {
                 startRecording()
-                recordButton.isEnabled = false
-                stopButton.isEnabled = true
-                stopButton.visibility = Button.VISIBLE
-                statusTextView.text = "Grabando..."
             } else {
-                requestPermissions()
+                requestPermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                )
             }
         }
 
-        stopButton.setOnClickListener {
+        btnStopRecording.setOnClickListener {
             stopRecording()
-            recordButton.isEnabled = true
-            stopButton.isEnabled = false
-            stopButton.visibility = Button.GONE
-            statusTextView.text = "Grabación finalizada"
         }
     }
 
     private fun startRecording() {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         fileName = "${storageDir.absolutePath}/recording_$timeStamp.3gp"
 
         mediaRecorder = MediaRecorder().apply {
@@ -75,14 +96,11 @@ class MainActivity : AppCompatActivity() {
             try {
                 prepare()
                 start()
+                updateUIForRecording(true)
             } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(this@MainActivity, "Error al iniciar la grabación", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Error al grabar: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
-
-        statusTextView.text = "Grabando..."
-        Toast.makeText(this, "Grabando audio...", Toast.LENGTH_SHORT).show()
     }
 
     private fun stopRecording() {
@@ -91,8 +109,7 @@ class MainActivity : AppCompatActivity() {
                 stop()
                 release()
             } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(this@MainActivity, "Error al detener la grabación", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Error al detener: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
         mediaRecorder = null
@@ -101,45 +118,45 @@ class MainActivity : AppCompatActivity() {
             recordings.add(fileName)
             saveRecordings()
             recordingAdapter.notifyDataSetChanged()
-            Toast.makeText(this, "Grabación guardada en: $fileName", Toast.LENGTH_SHORT).show()
+            updateUIForRecording(false)
+            Toast.makeText(this, "Grabación guardada", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun updateUIForRecording(isRecording: Boolean) {
+        if (isRecording) {
+            fabRecord.hide()
+            recordingCard.visibility = View.VISIBLE
+            btnStopRecording.visibility = View.VISIBLE
+            statusTextView.text = "Grabando..."
+        } else {
+            fabRecord.show()
+            recordingCard.visibility = View.GONE
+            btnStopRecording.visibility = View.GONE
+            statusTextView.text = "Listo para grabar"
+        }
+    }
+
+    // ------------------------- MÉTODOS EXISTENTES -------------------------
     private fun saveRecordings() {
-        val sharedPreferences = getSharedPreferences("recordings_prefs", MODE_PRIVATE)
-        sharedPreferences.edit().putStringSet("recordings", recordings.toSet()).apply()
+        val sharedPref = getSharedPreferences("recordings_prefs", MODE_PRIVATE)
+        sharedPref.edit().putStringSet("recordings", recordings.toSet()).apply()
     }
 
     private fun loadRecordings() {
-        val sharedPreferences = getSharedPreferences("recordings_prefs", MODE_PRIVATE)
-        val savedRecordings = sharedPreferences.getStringSet("recordings", emptySet()) ?: emptySet()
-
+        val sharedPref = getSharedPreferences("recordings_prefs", MODE_PRIVATE)
         recordings.clear()
-        savedRecordings.forEach { filePath ->
-            if (File(filePath).exists()) {
-                recordings.add(filePath)
-            }
-        }
+        recordings.addAll(sharedPref.getStringSet("recordings", emptySet()) ?: emptySet())
     }
 
     private fun checkPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermissions() {
-        requestPermissionsLauncher.launch(
-            arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        )
-    }
-
-    private val requestPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        if (permissions[Manifest.permission.RECORD_AUDIO] == true && permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true) {
-            Toast.makeText(this, "Permisos concedidos", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Permisos denegados", Toast.LENGTH_SHORT).show()
-        }
+        return ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
     }
 }
