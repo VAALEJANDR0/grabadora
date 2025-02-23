@@ -1,0 +1,73 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal">
+
+    <!-- Nombre del Audio -->
+    <TextView
+        android:id="@+id/recordingName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nombre del Audio"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Contenedor de Botones en Horizontal -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="4">
+
+        <!-- Botón Reproducir -->
+        <Button
+            android:id="@+id/playButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="▶️"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"/>
+
+        <!-- Botón Detener -->
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="⏹️"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"/>
+
+        <!-- Botón Editar -->
+        <Button
+            android:id="@+id/editButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="✏️"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"/>
+
+        <!-- Botón Compartir -->
+        <Button
+            android:id="@+id/shareButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="📤"
+            android:layout_weight="1"/>
+
+        <!-- Botón Eliminar -->
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="🗑️"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+</LinearLayout>
