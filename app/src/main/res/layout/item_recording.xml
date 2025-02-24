@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="2dp"
+    app:cardElevation="4dp"
     app:cardUseCompatPadding="true"
     android:layout_margin="8dp">
 
@@ -13,57 +14,105 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/recordingName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textColor="@color/secondary_text"
-            android:ellipsize="end"
-            android:maxLines="1"/>
-
+        <!-- Encabezado: Nombre, duración e indicador -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp"
             android:gravity="center_vertical">
 
+            <!-- Indicador de reproducción activa -->
+            <ImageView
+                android:id="@+id/icPlaying"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_equalizer"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- Nombre y duración -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/recordingName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:ellipsize="end"
+                    android:maxLines="1"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/recordingDuration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Botones de control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical">
+
+            <!-- Botón Play (amarillo por defecto) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/playButton"
                 style="@style/IconButton"
                 app:icon="@drawable/ic_play"
-                app:iconTint="@color/white"
-                app:backgroundTint="@color/secondary_color"/>
+                app:iconTint="@color/icon_color_white"
+                app:backgroundTint="@color/play_button_normal"
+                app:rippleColor="@color/play_button_active"
+                android:stateListAnimator="@anim/button_scale"/>
 
+            <!-- Botón Stop -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/stopButton"
                 style="@style/IconButton"
                 app:icon="@drawable/ic_stop"
                 android:layout_marginStart="8dp"
                 android:visibility="gone"
-                app:backgroundTint="@color/error_color"/>
+                app:backgroundTint="@color/error_color"
+                app:rippleColor="@color/button_pressed"
+                android:stateListAnimator="@anim/button_scale"/>
 
+            <!-- Botones adicionales -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/shareButton"
                 style="@style/IconButton"
                 app:icon="@drawable/ic_share"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                app:backgroundTint="@color/button_default"
+                app:rippleColor="@color/button_pressed"
+                android:stateListAnimator="@anim/button_scale"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/editButton"
                 style="@style/IconButton"
                 app:icon="@drawable/ic_edit"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                app:backgroundTint="@color/button_default"
+                app:rippleColor="@color/button_pressed"
+                android:stateListAnimator="@anim/button_scale"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/deleteButton"
                 style="@style/IconButton"
                 app:icon="@drawable/ic_delete"
                 android:layout_marginStart="8dp"
-                app:iconTint="@color/error_color"/>
+                app:backgroundTint="@color/error_color"
+                app:rippleColor="@color/button_pressed"
+                android:stateListAnimator="@anim/button_scale"/>
 
         </LinearLayout>
-
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

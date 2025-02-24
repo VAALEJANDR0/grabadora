@@ -1,0 +1,45 @@
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Estado estático (no animado) -->
+    <item android:id="@+id/state_static">
+        <vector
+            android:width="24dp"
+            android:height="24dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <path
+                android:name="left_bar"
+                android:fillColor="@color/play_button_active"
+                android:pathData="M4,20h4v-8H4V20z"/>
+            <path
+                android:name="middle_bar"
+                android:fillColor="@color/play_button_active"
+                android:pathData="M10,20h4V4h-4V20z"/>
+            <path
+                android:name="right_bar"
+                android:fillColor="@color/play_button_active"
+                android:pathData="M16,9v11h4V9H16z"/>
+        </vector>
+    </item>
+
+    <!-- Estado animado -->
+    <item android:id="@+id/state_animated">
+        <animated-vector
+            android:drawable="@drawable/ic_equalizer"
+            xmlns:android="http://schemas.android.com/apk/res/android">
+            <target
+                android:name="left_bar"
+                android:animation="@animator/equalizer_left_anim"/>
+            <target
+                android:name="middle_bar"
+                android:animation="@animator/equalizer_middle_anim"/>
+            <target
+                android:name="right_bar"
+                android:animation="@animator/equalizer_right_anim"/>
+        </animated-vector>
+    </item>
+
+    <!-- Transición para activar la animación -->
+    <transition
+        android:fromId="@id/state_static"
+        android:toId="@id/state_animated"/>
+</animated-selector>

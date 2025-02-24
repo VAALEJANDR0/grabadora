@@ -20,4 +20,22 @@
     <color name="red_500">#F44336</color>
     <color name="red_200">#EF9A9A</color>
 
+
+    <color name="button_default">#3F51B5</color>
+    <color name="button_pressed">#303F9F</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="play_active">#4CAF50</color>
+
+
+
+    <!-- Color amarillo para el botón Play en estado normal -->
+    <color name="play_button_normal">#FFD700</color>
+
+    <!-- Color verde para el botón Play en estado activo (reproduciendo) -->
+    <color name="play_button_active">#4CAF50</color>
+
+    <!-- Color del icono del botón -->
+    <color name="icon_color_white">#FFFFFF</color>
+
 </resources>
