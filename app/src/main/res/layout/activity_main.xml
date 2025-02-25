@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -17,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Grabadora de Sonido"
-            app:titleTextColor="@color/secondary_text"
+            app:titleTextColor="@color/text_secondary"
             app:backgroundTint="@color/primary_color"/>
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -63,7 +64,6 @@
                     android:textColor="@color/white"
                     android:textSize="16sp"/>
 
-                <!-- Botón para detener la grabación -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnStopRecording"
                     android:layout_width="wrap_content"
@@ -73,7 +73,6 @@
                     app:icon="@drawable/ic_stop"
                     app:iconTint="@color/white"
                     app:backgroundTint="@color/error_color"/>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -85,9 +84,14 @@
             android:clipToPadding="false"
             android:paddingBottom="88dp"/>
 
+        <!-- Estado vacío -->
+        <include
+            android:id="@+id/emptyState"
+            layout="@layout/empty_state"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
-    <!-- Botón Grabar Flotante -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabRecord"
         android:layout_width="wrap_content"

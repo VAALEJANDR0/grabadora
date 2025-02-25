@@ -42,7 +42,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/secondary_text"
                     android:ellipsize="end"
                     android:maxLines="1"/>
 
@@ -98,20 +98,20 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/editButton"
                 style="@style/IconButton"
-                app:icon="@drawable/ic_edit"
                 android:layout_marginStart="8dp"
+                android:stateListAnimator="@anim/button_scale"
                 app:backgroundTint="@color/button_default"
-                app:rippleColor="@color/button_pressed"
-                android:stateListAnimator="@anim/button_scale"/>
+                app:icon="@drawable/ic_edit"
+                app:rippleColor="@color/button_pressed" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/deleteButton"
                 style="@style/IconButton"
-                app:icon="@drawable/ic_delete"
                 android:layout_marginStart="8dp"
+                android:stateListAnimator="@anim/button_scale"
                 app:backgroundTint="@color/error_color"
-                app:rippleColor="@color/button_pressed"
-                android:stateListAnimator="@anim/button_scale"/>
+                app:icon="@drawable/ic_delete"
+                app:rippleColor="@color/button_pressed" />
 
         </LinearLayout>
     </LinearLayout>

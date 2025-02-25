@@ -28,15 +28,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recordingCard: MaterialCardView
     private lateinit var btnStopRecording: MaterialButton
     private lateinit var fabRecord: FloatingActionButton
+    private lateinit var emptyState: View
     private val recordings = mutableListOf<String>()
     private lateinit var recordingAdapter: RecordingAdapter
 
-    // Directorio de almacenamiento
     private val storageDir: File by lazy {
         File(getExternalFilesDir(null), "recordings").apply { mkdirs() }
     }
 
-    // Registro para permisos
     private val requestPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -57,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         statusTextView = findViewById(R.id.statusTextView)
         btnStopRecording = findViewById(R.id.btnStopRecording)
         recordingsRecyclerView = findViewById(R.id.recordingsRecyclerView)
+        emptyState = findViewById(R.id.emptyState)
 
         // Configurar RecyclerView
         recordingsRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         recordingsRecyclerView.adapter = recordingAdapter
 
         loadRecordings()
+        checkEmptyState()
 
         // Listeners
         fabRecord.setOnClickListener {
@@ -86,13 +87,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun startRecording() {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        fileName = "${storageDir.absolutePath}/recording_$timeStamp.3gp"
+        fileName = "${storageDir.absolutePath}/recording_$timeStamp.m4a"
 
         mediaRecorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setOutputFile(fileName)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             try {
                 prepare()
                 start()
@@ -119,7 +120,18 @@ class MainActivity : AppCompatActivity() {
             saveRecordings()
             recordingAdapter.notifyDataSetChanged()
             updateUIForRecording(false)
+            checkEmptyState()
             Toast.makeText(this, "Grabación guardada", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun checkEmptyState() {
+        if (recordings.isEmpty()) {
+            recordingsRecyclerView.visibility = View.GONE
+            emptyState.visibility = View.VISIBLE
+        } else {
+            recordingsRecyclerView.visibility = View.VISIBLE
+            emptyState.visibility = View.GONE
         }
     }
 
@@ -137,7 +149,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ------------------------- MÉTODOS EXISTENTES -------------------------
     private fun saveRecordings() {
         val sharedPref = getSharedPreferences("recordings_prefs", MODE_PRIVATE)
         sharedPref.edit().putStringSet("recordings", recordings.toSet()).apply()

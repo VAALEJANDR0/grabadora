@@ -38,4 +38,8 @@
     <!-- Color del icono del botón -->
     <color name="icon_color_white">#FFFFFF</color>
 
+
+    <color name="progress_track">#BDBDBD</color>
+    <color name="transparent">#00FFFFFF</color>
+
 </resources>

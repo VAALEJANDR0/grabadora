@@ -3,7 +3,6 @@ package com.example.grabadora
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +35,18 @@ class RecordingAdapter(
         val shareButton: MaterialButton = itemView.findViewById(R.id.shareButton)
         val deleteButton: MaterialButton = itemView.findViewById(R.id.deleteButton)
         val icPlaying: ImageView = itemView.findViewById(R.id.icPlaying)
+
+        init {
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val intent = Intent(context, AudioDetailActivity::class.java).apply {
+                        putExtra("audioPath", recordings[position])
+                    }
+                    context.startActivity(intent)
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordingViewHolder {
@@ -57,10 +68,9 @@ class RecordingAdapter(
         holder.deleteButton.setOnClickListener { deleteAudio(file, position) }
     }
 
-    // ------------------------- Funciones principales -------------------------
     private fun playAudio(path: String, position: Int, holder: RecordingViewHolder) {
         if (currentlyPlayingPosition != -1) {
-            notifyItemChanged(currentlyPlayingPosition) // Actualiza el ítem anterior
+            notifyItemChanged(currentlyPlayingPosition)
         }
 
         mediaPlayer?.release()
@@ -113,13 +123,11 @@ class RecordingAdapter(
 
     private fun updateButtonVisibility(holder: RecordingViewHolder, position: Int) {
         if (position == currentlyPlayingPosition) {
-            // Modo reproducción activa
             holder.playButton.visibility = View.GONE
             holder.stopButton.visibility = View.VISIBLE
             holder.icPlaying.visibility = View.VISIBLE
             holder.playButton.setBackgroundColor(ContextCompat.getColor(context, R.color.play_button_active))
         } else {
-            // Modo normal
             holder.playButton.visibility = View.VISIBLE
             holder.stopButton.visibility = View.GONE
             holder.icPlaying.visibility = View.GONE
@@ -127,7 +135,6 @@ class RecordingAdapter(
         }
     }
 
-    // ------------------------- Funciones secundarias -------------------------
     private fun showRenameDialog(file: File, position: Int) {
         val input = EditText(context).apply { setText(file.nameWithoutExtension) }
         AlertDialog.Builder(context)
@@ -137,7 +144,7 @@ class RecordingAdapter(
                 val newName = input.text.toString().trim()
                 if (newName.isEmpty()) return@setPositiveButton
 
-                val newFile = File(file.parent, "$newName.3gp")
+                val newFile = File(file.parent, "$newName.m4a")  // Extensión .m4a
                 if (newFile.exists()) {
                     Toast.makeText(context, "Nombre ya existe", Toast.LENGTH_SHORT).show()
                 } else if (file.renameTo(newFile)) {
@@ -173,7 +180,7 @@ class RecordingAdapter(
         try {
             val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "audio/*"
+                type = "audio/mp4"  // Tipo MIME para .m4a
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
